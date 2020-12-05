@@ -3,12 +3,6 @@ import os
 import h5py
 from scipy.interpolate import splrep, splev
 from scipy.interpolate import RectBivariateSpline, bisplev
-from .pulsar import Pulsar
-from .psrgw import PSR_DATA, GW_DATA, FisherMatrix
-import emcee as mc
-from multiprocessing import Pool
-from timeit import default_timer as timer
-from multiprocessing import set_start_method
 
 def load_dict_from_hdf5(filename, mode='r'):
 
