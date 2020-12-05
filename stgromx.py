@@ -110,22 +110,6 @@ class LoadModel:
                     dd.reshape(len(self.logAlphas), len(self.betas)),
                     xdeg=5, ydeg=5, s=0)
                 self.fits[key].append(fit)
-        try:
-            gr = load_dict_from_hdf5("GR_raw.hdf5")
-            grtmp = gr[EOS_name]
-            self.gr_ec_nodes = grtmp['meta']['e_cs']['nodes']
-            #self.gr_mA = grtmp['rawdata'][0, 0, :, 0]
-            self.gr_mA = grtmp['rawdata'][0, :, 0]
-            self.gr_mA_max = max(self.gr_mA)
-        except Exception as excep:
-            print(excep)
-    
-    def m2ec(self, massInterval): # massInterval = [mass_min, mass_max]
-        if massInterval[1] > self.gr_mA_max:
-            massInterval[1] = self.gr_mA_max
-
-        bs = splrep(sorted(self.gr_mA), self.gr_ec_nodes)
-        return splev(massInterval, bs)
     
     def _evo(self, key, pool, val_ec):
         fits_tmp = self.fits[key]
@@ -151,28 +135,3 @@ class LoadModel:
                 val = np.exp(self._evo(key='log'+key, pool=pool, val_ec=e_c))
             vals += (val,)
         return vals
-
-    '''
-    def __call__(self, logAlpha, beta, e_c, s=0): # TO-DO: add the evolution for a List
-        def evo(key, pool, val_ec):
-            fits_tmp = self.fits[key]
-            fit_evals = np.array([fits_tmp[ii](pool) 
-                    for ii in range(len(self.eim_indices[key]))])
-            values =  np.dot(fit_evals, self.eim_B[key])
-            bspl =  splrep(self.e_cs, values)
-            return splev(val_ec, bspl)
-        
-        pool = [[logAlpha], [beta]]
-        if logAlpha < self.logAlphas[0] or logAlpha > self.logAlphas[-1] \
-                    or beta < self.betas[0] or beta > self.betas[-1]:
-            raise Exception("Range error with logAlpha or beta")
-
-        mA = evo(key='mA', pool=pool, val_ec=e_c)
-        logAlphaA = evo(key='logAlphaA', pool=pool, val_ec=e_c)
-        R = evo(key='R', pool=pool, val_ec=e_c)
-        logIA = evo(key='logIA', pool=pool, val_ec=e_c)
-        logbetaA = evo(key='logbetaA', pool=pool, val_ec=e_c)
-        logkA = evo(key='logkA', pool=pool, val_ec=e_c)
-
-        return mA, R, np.exp(logAlphaA), np.exp(logIA), np.exp(logbetaA), np.exp(logkA)
-    '''
