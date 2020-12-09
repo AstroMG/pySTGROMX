@@ -95,7 +95,8 @@ def MultivariateFits(x, y, xdeg=5, ydeg=5, s=0):
 class LoadModel:
     def __init__(self, EOS_name, label='', path='.'):
         #filename = EOS_name + '_mod.hdf5'
-        file_path = os.path.abspath(path + '/' + label + '/' + EOS_name + '_mod.hdf5')
+        abspath=os.path.split(os.path.abspath(__file__))[0]
+        file_path = abspath+'/'+path + '/' + label + '/' + EOS_name + '_mod.hdf5'
         filename = file_path
         info = load_dict_from_hdf5(filename)
         self._EOS_name=EOS_name
@@ -123,6 +124,7 @@ class LoadModel:
                     dd.reshape(len(self.logAlphas), len(self.betas)),
                     xdeg=5, ydeg=5, s=0)
                 self.fits[key].append(fit)
+        return
     
     def _evo(self, key, pool, val_ec):
         fits_tmp = self.fits[key]
