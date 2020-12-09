@@ -4,6 +4,24 @@ import h5py
 from scipy.interpolate import splrep, splev
 from scipy.interpolate import RectBivariateSpline, bisplev
 
+EOS_rosm_dat_fmt= {'AP3': {'logkA':{'fmt':'log',      'a':1.0,    'x0':1.0},},
+                'AP4': {'logkA':{'fmt':'log',      'a':1.0,    'x0':0.0},},
+                'ENG': {'logkA':{'fmt':'log',      'a':1.0,    'x0':1.0},},
+                 'H4': {'logkA':{'fmt':'loglike',  'a':1.0,    'x0':0.2},},
+               'MPA1': {'logkA':{'fmt':'log',      'a':1.0,    'x0':1.0},},
+               'PAL1': {'logkA':{'fmt':'loglike',  'a':1.0,    'x0':0.2},},
+               'SLy4': {'logkA':{'fmt':'loglike',  'a':1.0,    'x0':0.2},},
+               'WFF1': {'logkA':{'fmt':'log',      'a':1.0,    'x0':1.0},},
+               'WFF2': {'logkA':{'fmt':'log',      'a':1.0,    'x0':1.0},},
+             'BL_EOS': {'logkA':{'fmt':'loglike',  'a':1.0,    'x0':0.2},},
+              'BSk20': {'logkA':{'fmt':'log',      'a':1.0,    'x0':1.0},},
+              'BSk21': {'logkA':{'fmt':'log',      'a':1.0,    'x0':1.0},},
+              'BSk22': {'logkA':{'fmt':'loglike',  'a':1.0,    'x0':0.2},},
+              'BSk25': {'logkA':{'fmt':'log',      'a':1.0,    'x0':1.0},},
+               'SLy9': {'logkA':{'fmt':'loglike',  'a':1.0,    'x0':0.2},},
+            'SLy230a': {'logkA':{'fmt':'loglike',  'a':1.0,    'x0':0.2},},
+}
+
 def load_dict_from_hdf5(filename, mode='r'):
 
     if mode not in ['r', 'r+', 'a+']:
@@ -80,6 +98,7 @@ class LoadModel:
         file_path = os.path.abspath(path + '/' + label + '/' + EOS_name + '_mod.hdf5')
         filename = file_path
         info = load_dict_from_hdf5(filename)
+        self._EOS_name=EOS_name
         self.logAlphas = info['logAlpha0']
         self.betas = info['beta0']
         self.e_cs = info['ec_nodes']
@@ -125,6 +144,12 @@ class LoadModel:
                 val = self._evo(key=key, pool=pool, val_ec=e_c)
             elif(key in ['alphaA']):
                 val = np.exp(self._evo(key='logAlphaA', pool=pool, val_ec=e_c))
+            elif(key in ['kA']):
+                kAfmt=EOS_rosm_dat_fmt[self._EOS_name]['logkA']
+                if(kAfmt['fmt']=='loglike'):
+                    val = np.exp(self._evo(key='logkA', pool=pool, val_ec=e_c))/kAfmt['a']-kAfmt['x0']
+                else:
+                    val = np.exp(self._evo(key='logkA', pool=pool, val_ec=e_c))
             else:
                 val = np.exp(self._evo(key='log'+key, pool=pool, val_ec=e_c))
             vals += (val,)
